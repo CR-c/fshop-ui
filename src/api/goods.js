@@ -40,6 +40,24 @@ const getAddress = function(){
     })
 }
 
+const getAddressPage = function(page,pageSize){
+    return request({
+        method:"GET",
+        url:'/address/app/addressPage',
+        params:{
+            page:page,
+            pageSize:pageSize
+        }
+    }).then((response)=>{
+        console.log("分页查询成功")
+        return response.data.data
+        // console.log(response.data.data.records)
+        // return response.data.data.records
+    })
+}
+
+
+
 //查询尺寸信息
 const getSpecs = function(id){
     return request({
@@ -94,6 +112,8 @@ export default{
     getClothInfo,
     getClothSwiper,
     getAddress,
+    getAddressPage,
     getSpecs,
     getNums,
+    
 }

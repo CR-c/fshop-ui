@@ -12,19 +12,57 @@ const emitF = function(){
 const emitA = function(item){
   emit('setAddressInfo',item)
 }
-
-
+//页码
+const page = ref(1)
+//总页码
+const pages = ref(1)
+//分页查询的所有信息
+const addressPage = ref([])
+//分页查询的具体信息
 const addressList = ref([])
-
-const getAddressList =  async function(){
-  addressList.value =  await Goods.getAddress()
-  console.log(addressList.value)
+//进行分页查询
+const getAddressList =  async function(page,pageSize){
+  addressPage.value = await Goods.getAddressPage(page,pageSize)
+  // addressList.value = addressPage.value.records
+  // addressList.value = toRaw(addressPage.value.target)
+  pages.value = addressPage.value.pages
+  // console.log(addressPage.value)
+  // console.log(toRaw(addressPage.data.data))
+  // console.log(toRaw(addressPage.data.records))
+  // console.log(toRaw(addressPage.value.records))
+  // console.log(toRaw(addressPage.value.pages))
 }
 
 onMounted(()=>{
   console.log("onMounted-begin")
-  getAddressList();
+  //默认查询3条每页
+  getAddressList(1,3);
+
 })
+
+
+
+
+const cutPage = function(){
+  console.log("cutPage-begin")
+  console.log(page.value)
+  if(page.value!==1){
+    page.value = page.value-1;
+  }
+  console.log("cutPage-end")
+  console.log(page.value)
+  getAddressList(page.value,3);
+}
+const addPage = function(){
+  console.log("addPage-begin")
+  console.log(page.value)
+  if(page.value!==pages.value){
+    page.value++;
+  }
+  console.log("addPage-end")
+  console.log(page.value)
+  getAddressList(page.value,3);
+}
 
 
 
@@ -48,7 +86,8 @@ onMounted(()=>{
     </view> -->
     <!-- 地址懒 -->
     <view class="address">
-      <view class="item" v-for="item in addressList" :key="item.addressId">
+      <!-- <view class="item" v-for="item in addressList" :key="item.addressId"> -->
+      <view class="item" v-for="item in addressPage.records" :key="item.addressId">
         <view class="item-content">
           <view class="user">
             {{ item.name }}
@@ -62,11 +101,11 @@ onMounted(()=>{
     <view>
       <!-- 翻页 -->
     </view>
-      <uni-icons type="arrow-left" size="30"></uni-icons>
-      <text class="current">1</text>
+      <uni-icons type="arrow-left" size="30" @click="cutPage()"></uni-icons>
+      <text class="current">{{page}}</text>
       <text class="split">/</text>
-      <text class="total">2</text>
-      <uni-icons type="arrow-right" size="30"></uni-icons>
+      <text class="total">{{ addressPage.pages }}</text>
+      <uni-icons type="arrow-right" size="30" @click="addPage()" ></uni-icons>
     </view>
     <!-- 新建地址 -->
     <view class="footer">

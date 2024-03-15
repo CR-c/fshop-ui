@@ -16,6 +16,7 @@ instance.interceptors.request.use(
     (config)=>{
         //请求前的回调
         //设置请求头
+        config.headers['Content-Type'] = 'application/json;charset=UTF-8';
         if(stoken.userTokenStore().token){
             config.headers['Authorization'] = 'Bearer ' + stoken.userTokenStore().token
         }
@@ -23,6 +24,8 @@ instance.interceptors.request.use(
     },
     (err)=>{
         //请求错误的回调
+        console.log(err)
+        return Promise.reject(err); 
     }
 )
 // //添加响应拦截器
