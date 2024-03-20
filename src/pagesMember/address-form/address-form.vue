@@ -19,6 +19,7 @@ const form = ref({
   isDefault: 0, // 默认地址，1为是，0为否
 });
 const addressFrom = ref({
+  addressId:null,
   name: "", //收货人
   phone: "", //联系方式
   province: "", //省份信息
@@ -58,6 +59,7 @@ const onSubmit = function () {
   //调用进行提交
   if(query.id){
     //存在id进行修改
+    addressFrom.value.addressId=query.id
     AddressApi.updateAddress(addressFrom.value)
   }
   else{
@@ -82,6 +84,7 @@ const getMemberAddressByIdData = async function () {
     form.value.contact = addressFrom.value.phone;
     form.value.address = addressFrom.value.stress;
     form.value.isDefault = addressFrom.value.flag;
+
   }
 };
 

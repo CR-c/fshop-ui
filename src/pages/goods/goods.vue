@@ -1,107 +1,125 @@
 // src/pages/goods/goods.vue
 <script setup>
-import { ref } from "vue"
-import { onLoad } from "@dcloudio/uni-app"
-import Goods from "@/api/goods.js"
-import stoken from '@/stores/token.js'
+import { ref } from "vue";
+import { onLoad } from "@dcloudio/uni-app";
+import Goods from "@/api/goods.js";
+import stoken from "@/stores/token.js";
 //自定组件
-import addressPanel from "@/pages/goods/comps/addressPanel.vue"
-import servicePanel from "@/pages/goods/comps/servicePanel.vue"
-import loginPanel from "@/pages/login/login.vue"
-import specsPanel from "@/pages/goods/comps/specsPanel.vue"
+import addressPanel from "@/pages/goods/comps/addressPanel.vue";
+import servicePanel from "@/pages/goods/comps/servicePanel.vue";
+import loginPanel from "@/pages/login/login.vue";
+import specsPanel from "@/pages/goods/comps/specsPanel.vue";
 // 获取屏幕边界到安全区域距离
-const { safeAreaInsets } = uni.getSystemInfoSync()
-const clothId = ref(0)
-const clothSId = ref("")
-const clothInfo = ref([])
-const clothSwiper =ref([])
-const activeIndex = ref(0)
-const addressList = ref([])
+const { safeAreaInsets } = uni.getSystemInfoSync();
+const clothId = ref(0);
+const clothSId = ref("");
+const clothInfo = ref([]);
+const clothSwiper = ref([]);
+const activeIndex = ref(0);
+const addressList = ref([]);
 //设置寄件地址信息
-const addressInfo = ref([])
+const addressInfo = ref([]);
 //设置尺寸信息
 const specsScInfo = ref({
-  size:'',
-  color:'',
-  num:0
-})
+  size: "",
+  color: "",
+  num: 0,
+});
+
+//添加到购物车
+const addCart = async function () {
+  console.log(specsScInfo.value)
+  //当选择了尺寸和数量才能添加购物车
+  if (
+    specsScInfo.value.color !== "" &&
+    specsScInfo.value.num !== 0 &&
+    specsScInfo.value.size !== ""
+  ) {
+    Goods.addCarts(specsScInfo.value, clothInfo.value, clothSId.value);
+    uni.showToast({ icon: "success", title: "添加成功" });
+
+  } else {
+    popupName.value = "specs";
+    popup.value.open();
+  }
+};
+
 // 接收页面参数
-onLoad((options)=>{
+onLoad((options) => {
   // console.log(options)
-  clothSId.value = options.id
-  console.log(options.id)
+  clothSId.value = options.id;
+  console.log(options.id);
   getClothInfo();
   getClothSwiper();
 
   // getAddressList();
-})
+});
 //获取地址信息
-const getAddressList = async function(){
-    addressList.value = await Goods.getAddress()
-    console.log(addressList.value)
-}
+const getAddressList = async function () {
+  addressList.value = await Goods.getAddress();
+  console.log(addressList.value);
+};
 
 //获取衣服信息
-const getClothInfo = async function(){
+const getClothInfo = async function () {
   // let bId = BigInt();
-  clothInfo.value = await Goods.getClothInfo(clothSId.value)
-  console.log(clothInfo.value)
-}
+  clothInfo.value = await Goods.getClothInfo(clothSId.value);
+  console.log(clothInfo.value);
+};
 //获取衣服轮播图
-const getClothSwiper = async function(){
-  clothSwiper.value = await Goods.getClothSwiper(clothSId.value)
-  console.log(clothSwiper.value)
-}
+const getClothSwiper = async function () {
+  clothSwiper.value = await Goods.getClothSwiper(clothSId.value);
+  console.log(clothSwiper.value);
+};
 //修改轮播图下标
-const onchange = function(e){
-  console.log(e)
+const onchange = function (e) {
+  console.log(e);
   activeIndex.value = e.detail.current;
-}
+};
 //轮播图放大
-const onTapImg = function(index){
+const onTapImg = function (index) {
   uni.previewImage({
-    current:index,
+    current: index,
     urls: [clothSwiper.value[index].imgUrl],
-    success: function() {
-					console.log('选中了第' + (index + 1) + '个按钮,第' + (index + 1) + '张图片');
+    success: function () {
+      console.log(
+        "选中了第" + (index + 1) + "个按钮,第" + (index + 1) + "张图片"
+      );
     },
-    fail: function(err) {
-      console.log(clothSwiper.value[index].imgUrl)
+    fail: function (err) {
+      console.log(clothSwiper.value[index].imgUrl);
       console.log(err.errMsg);
-    }
-  })
-}
+    },
+  });
+};
 //设置配送信息
-const setAddressInfo = function(item){
-  addressInfo.value = item
-  popup.value.close()
-  console.log(addressInfo.value)
-}
+const setAddressInfo = function (item) {
+  addressInfo.value = item;
+  popup.value.close();
+  console.log(addressInfo.value);
+};
 //设置选中的尺寸信息
-const setSpecsScInfo = function(chose){
-  specsScInfo.value.size=chose.size
-  specsScInfo.value.color=chose.color
-  specsScInfo.value.num=chose.num
-}
+const setSpecsScInfo = function (chose) {
+  specsScInfo.value.size = chose.size;
+  specsScInfo.value.color = chose.color;
+  specsScInfo.value.num = chose.num;
+};
 
 //uni弹出框
-const popup = ref()
-const popupName = ref("")
+const popup = ref();
+const popupName = ref("");
 
-const popupNew = function(name){
+const popupNew = function (name) {
   popupName.value = name;
-  if(name === "address"){
-    let head = stoken.userTokenStore().token
-    if(head===""){
-      console.log("head == null")
-      popupName.value="login"
+  if (name === "address") {
+    let head = stoken.userTokenStore().token;
+    if (head === "") {
+      console.log("head == null");
+      popupName.value = "login";
     }
   }
-  popup.value.open()
-}
-
-
-
+  popup.value.open();
+};
 </script>
 
 <template>
@@ -111,16 +129,12 @@ const popupNew = function(name){
       <!-- 商品主图 -->
       <view class="preview">
         <swiper circular @change="onchange($event)">
-          <swiper-item v-for="(item,index) in clothSwiper" :key="item.id">
-            <image
-              @tap="onTapImg(index)"
-              mode="widthFix"
-              :src="item.imgUrl"
-            />
+          <swiper-item v-for="(item, index) in clothSwiper" :key="item.id">
+            <image @tap="onTapImg(index)" mode="widthFix" :src="item.imgUrl" />
           </swiper-item>
         </swiper>
         <view class="indicator">
-          <text class="current">{{ activeIndex+1 }}</text>
+          <text class="current">{{ activeIndex + 1 }}</text>
           <text class="split">/</text>
           <text class="total">{{ clothSwiper.length }}</text>
         </view>
@@ -130,23 +144,39 @@ const popupNew = function(name){
       <view class="meta">
         <view class="price">
           <text class="symbol">¥</text>
-          <text class="number">{{clothInfo.price}}</text>
+          <text class="number">{{ clothInfo.price }}</text>
         </view>
-        <view class="name ellipsis">{{clothInfo.name}} </view>
-        <view class="desc"> {{clothInfo.description}} </view>
+        <view class="name ellipsis">{{ clothInfo.name }} </view>
+        <view class="desc"> {{ clothInfo.description }} </view>
       </view>
 
       <!-- 操作面板 -->
       <view class="action">
         <view @tap="popupNew('specs')" class="item arrow">
           <text class="label">选择</text>
-          <text class="text ellipsis" v-if="specsScInfo.size.length===0 && specsScInfo.color.length===0"> 请选择商品规格 </text>
-          <text class="text ellipsis" v-if="specsScInfo.length!==0 || specsScInfo.color.length!==0"> {{ specsScInfo.size+' '+specsScInfo.color }} </text>
+          <text
+            class="text ellipsis"
+            v-if="
+              specsScInfo.size.length === 0 && specsScInfo.color.length === 0
+            "
+          >
+            请选择商品规格
+          </text>
+          <text
+            class="text ellipsis"
+            v-if="specsScInfo.length !== 0 || specsScInfo.color.length !== 0"
+          >
+            {{ specsScInfo.size + " " + specsScInfo.color }}
+          </text>
         </view>
         <view @tap="popupNew('address')" class="item arrow">
           <text class="label">送至</text>
-          <text class="text ellipsis" v-if="addressInfo.length===0"> 请选择收获地址 </text>
-          <text class="text ellipsis" v-if="addressInfo.length!==0"> {{addressInfo.address}} </text>
+          <text class="text ellipsis" v-if="addressInfo.length === 0">
+            请选择收获地址
+          </text>
+          <text class="text ellipsis" v-if="addressInfo.length !== 0">
+            {{ addressInfo.address }}
+          </text>
         </view>
         <view @tap="popupNew('service')" class="item arrow">
           <text class="label">服务</text>
@@ -183,32 +213,47 @@ const popupNew = function(name){
         ></image>
       </view>
     </view>
-
-
   </scroll-view>
 
   <!-- 用户操作 -->
-  <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
+  <view
+    class="toolbar"
+    :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"
+  >
     <view class="icons">
       <button class="icons-button"><text class="icon-heart"></text>收藏</button>
       <button class="icons-button" open-type="contact">
         <text class="icon-handset"></text>客服
       </button>
-      <navigator class="icons-button" url="/pages/cart/cart" open-type="switchTab">
+      <navigator
+        class="icons-button"
+        url="/pages/cart/cart2"
+        open-type="navigate"
+      >
         <text class="icon-cart"></text>购物车
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
+      <view @tap="addCart()" class="addcart" > 加入购物车 </view>
       <view class="buynow"> 立即购买 </view>
     </view>
   </view>
 
   <uni-popup ref="popup" type="bottom">
-    <addressPanel v-if="popupName==='address'"    @close="popup.close()"  @setAddressInfo="setAddressInfo"  />
-    <servicePanel v-if="popupName==='service'"   @close="popup.close()"     />
-    <loginPanel v-if="popupName==='login'" @close="popup.close()" />
-    <specsPanel v-if="popupName==='specs'" :clothId="clothInfo.id" @close="popup.close()" @setSpecsScInfo="setSpecsScInfo" :specsScInfo="specsScInfo"/>
+    <addressPanel
+      v-if="popupName === 'address'"
+      @close="popup.close()"
+      @setAddressInfo="setAddressInfo"
+    />
+    <servicePanel v-if="popupName === 'service'" @close="popup.close()" />
+    <loginPanel v-if="popupName === 'login'" @close="popup.close()" />
+    <specsPanel
+      v-if="popupName === 'specs'"
+      :clothId="clothInfo.id"
+      @close="popup.close()"
+      @setSpecsScInfo="setSpecsScInfo"
+      :specsScInfo="specsScInfo"
+    />
   </uni-popup>
 </template>
 
@@ -255,9 +300,9 @@ page {
     position: absolute;
     top: 50%;
     right: 30rpx;
-    content: '\e6c2';
+    content: "\e6c2";
     color: #ccc;
-    font-family: 'erabbit' !important;
+    font-family: "erabbit" !important;
     font-size: 32rpx;
     transform: translateY(-50%);
   }
@@ -272,7 +317,6 @@ page {
     .image {
       width: 550rpx;
       height: 550rpx;
-
     }
     .indicator {
       height: 40rpx;

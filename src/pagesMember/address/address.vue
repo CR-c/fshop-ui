@@ -1,21 +1,33 @@
 <script setup >
 //
-import {ref,onMounted,toRaw, computed} from 'vue'
-import Goods from "@/api/goods.js"
+import { ref, onMounted, toRaw, computed } from "vue";
+import Goods from "@/api/goods.js";
+import AddressApi from "@/api/address";
 
-const addressList = ref([])
+const addressList = ref([]);
 
-const getAddressList =  async function(){
-  addressList.value =  await Goods.getAddress()
+const getAddressList = async function () {
+  addressList.value = await Goods.getAddress();
   // console.lo
-  console.log(addressList.value)
+  console.log(addressList.value);
+};
+const onDeleteAddress = function(addressId){
+  uni.showModal({
+    content: '删除地址?',
+    success: (res) => {
+      if (res.confirm) {
+        // 根据id删除收货地址
+        AddressApi.deleteAdress(addressId)
+        // 重新获取收货地址列表
+        getAddressList()
+      }
+    },
+  })
 }
-
-onMounted(()=>{
-  console.log("onMounted-begin")
+onMounted(() => {
+  console.log("onMounted-begin");
   getAddressList();
-})
-
+});
 </script>
 
 <template>
@@ -23,32 +35,50 @@ onMounted(()=>{
     <!-- 地址列表 -->
     <scroll-view class="scroll-view" scroll-y>
       <view v-if="true" class="address">
-        <view class="address-list">
+        <uni-swipe-action class="address-list">
           <!-- 收货地址项 -->
-          <view class="item" v-for="item in addressList" :key="item.addressId">
+          <uni-swipe-action-item
+            class="item"
+            v-for="item in addressList"
+            :key="item.addressId"
+          >
             <view class="item-content">
               <view class="user">
                 {{ item.name }}
-                <text class="contact">{{item.phone}}</text>
-                <text v-if="item.flag===0" class="badge">默认 </text>
+                <text class="contact">{{ item.phone }}</text>
+                <text v-if="item.flag === 1" class="badge">默认 </text>
               </view>
-              <view class="locate">{{ item.province }} {{ item.city }} {{ item.area }} {{ item.stress }}</view>
+              <view class="locate"
+                >{{ item.province }} {{ item.city }} {{ item.area }}
+                {{ item.stress }}</view
+              >
               <navigator
                 class="edit"
                 hover-class="none"
-                :url="`/pagesMember/address-form/address-form?id=1`"
+                :url="
+                  `/pagesMember/address-form/address-form?id=` + item.addressId
+                "
               >
                 修改
               </navigator>
             </view>
-          </view>
-        </view>
+            <!-- 右侧插槽 -->
+            <template #right>
+              <button @tap="onDeleteAddress(item.addressId)" class="delete-button">
+                删除
+              </button>
+            </template>
+          </uni-swipe-action-item>
+        </uni-swipe-action>
       </view>
       <view v-else class="blank">暂无收货地址</view>
     </scroll-view>
     <!-- 添加按钮 -->
     <view class="add-btn">
-      <navigator hover-class="none" url="/pagesMember/address-form/address-form">
+      <navigator
+        hover-class="none"
+        url="/pagesMember/address-form/address-form"
+      >
         新建地址
       </navigator>
     </view>

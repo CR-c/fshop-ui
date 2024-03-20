@@ -51,6 +51,18 @@
 			"style": {
 				"navigationBarTitleText": "登录"
 			}
+		},
+		{
+			"path": "pages/cart/cart",
+			"style": {
+				"navigationBarTitleText": "购物车"
+			}
+		},
+		{
+			"path": "pages/cart/cart2",
+			"style": {
+				"navigationBarTitleText": "购物车"
+			}
 		}
 	],
 	"globalStyle": {
@@ -70,13 +82,14 @@
 				"text": "分类"
 			},
 			{
-				"pagePath": "pages/my/my",
-				"text": "我的"
+				"pagePath": "pages/cart/cart",
+				"text": "购物车"
 			},
 			{
-				"pagePath": "pages/buy/buy",
-				"text": "衣服"
+				"pagePath": "pages/my/my",
+				"text": "我的"
 			}
+
 		]
 	},
 	"subPackages": [

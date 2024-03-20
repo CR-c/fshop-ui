@@ -66,10 +66,11 @@ const addAddress = async function (addressInfo) {
     })
     return response
 }
-
+//修改地址
 const updateAddress = async function (addressInfo) {
     //设置成结构体
     const data = {
+        addressId:addressInfo.addressId,//地址id，
         name: addressInfo.name, //收货人
         phone: addressInfo.phone, //联系方式
         province: addressInfo.province, //省份信息
@@ -87,10 +88,22 @@ const updateAddress = async function (addressInfo) {
     return response
 }
 
+const deleteAdress = async function(addressId){
+    const response = await request({
+        method:"DELETE",
+        url:'/address/web/deleteAddress/' + addressId,
+        // params:{
+        //     addressId:addressId
+        // }
+    })
+    return response
+}
+
 export default {
     getAddress,
     getAddressPage,
     addAddress,
     getAddressById,
-    updateAddress
+    updateAddress,
+    deleteAdress,
 }
