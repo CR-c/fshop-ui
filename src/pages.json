@@ -64,6 +64,7 @@
 				"navigationBarTitleText": "购物车"
 			}
 		}
+		
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
@@ -89,7 +90,6 @@
 				"pagePath": "pages/my/my",
 				"text": "我的"
 			}
-
 		]
 	},
 	"subPackages": [
@@ -123,6 +123,38 @@
 					}
 				}
 			]
+		},
+		{
+			"root": "pagesOrder",
+			"pages": [
+				{
+					"path": "create/create",
+					"style": {
+						"navigationBarTitleText": "填写订单"
+					}
+				},{
+					"path": "detail/detail",
+					"style": {
+						"navigationBarTitleText": "订单详情"
+					}
+				},{
+					"path": "payment/payment",
+					"style": {
+						"navigationBarTitleText": "支付成功"
+					}
+				},{
+					"path": "list/list",
+					"style": {
+						"navigationBarTitleText": "全部订单详情"
+					}
+					,
+					"usingComponents": {
+						"OrderList": "components/OrderList/OrderList"
+					  },
+					  "navigationBarTitleText": "全部订单详情"
+				}
+			]
+
 		}
 	]
 }

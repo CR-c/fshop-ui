@@ -1,10 +1,12 @@
 <script setup>
 import { onLoad } from "@dcloudio/uni-app";
 import stoken from "@/stores/token.js";
-import { ref, onMounted, onUpdated } from "vue";
+import { ref, onMounted, onUpdated, onBeforeMount } from "vue";
+import { onShow } from "@dcloudio/uni-app";
 import CartsApi from "@/api/cart.js";
 import GoodsApi from "@/api/goods.js";
-import { onShow } from "@dcloudio/uni-app";
+import OrderApi from "@/api/order.js";
+
 //登录请求头
 const head = ref("");
 //总价
@@ -14,40 +16,51 @@ const totalGoods = ref(0);
 //获取购物车信息
 const cartsInfo = ref([]);
 //全选/取消全选
-const checkStaus = ref('')
+const checkStaus = ref("");
+//空订单号
+const orderId = ref(-1);
+//获取购物车的信息
 const getCartsInfo = async function () {
   cartsInfo.value = await CartsApi.getCartsInfo();
   console.log(cartsInfo.value);
   judge_checkALl();
 };
 //判断是否全部选中了
-const judge_checkALl = function(){
-  let count=0;
-  let num =0;
-  cartsInfo.value.forEach((item)=>{
-    num+=1;
-    if(item.checkFlag===true){
-      count+=1;
+const judge_checkALl = function () {
+  if (cartsInfo.value !== null) {
+    let count = 0;
+    let num = 0;
+    cartsInfo.value.forEach((item) => {
+      num += 1;
+      if (item.checkFlag === true) {
+        count += 1;
+      }
+    });
+    if (count === num) {
+      checkStaus.value = "取消全选";
+    } else {
+      checkStaus.value = "全选";
     }
-  })
-  if(count===num){
-    checkStaus.value="取消全选"
-  }else{
-    checkStaus.value="全选"
   }
-}
-//删除商品
-const delCarts = async function (clothId) {
-  await CartsApi.deleteCartsInfo(clothId);
-  updateTotalPrice();
 };
+//删除商品
+const delCarts = async function (clothId, item) {
+  await CartsApi.deleteCartsInfo(clothId, item);
+  updateTotalPrice();
+  getCartsInfo();
+};
+
+onBeforeMount(() => {
+  //获取一个空订单id
+  // getOrderId();
+});
 onLoad(() => {
   //获取请求头判断是否登录
   head.value = stoken.userTokenStore().token;
-
   if (head.value !== "") {
     getCartsInfo();
   }
+  //更新购物车价格
   updateTotalPrice();
 });
 
@@ -64,6 +77,7 @@ onShow(() => {
 onUpdated(() => {
   updateTotalPrice();
   judge_checkALl();
+  // getOrderId();
 });
 
 //更新购物车总价
@@ -73,7 +87,7 @@ const updateTotalPrice = function () {
   cartsInfo.value.forEach((item) => {
     if (item.checkFlag === true) {
       sum += item.price * item.quantity;
-      count+=1;
+      count += 1;
       console.log(sum);
     }
   });
@@ -103,12 +117,12 @@ const updateQuantity = async function (flag, item) {
 const updCheck = async function (item, flag) {
   if (item === null && flag == 1) {
     cartsInfo.value.forEach((item) => {
-      if(checkStaus.value==='全选'){
+      if (checkStaus.value === "全选") {
         item.checkFlag = true;
-        checkStaus.value==='取消全选'
-      }else{
+        checkStaus.value === "取消全选";
+      } else {
         item.checkFlag = false;
-        checkStaus.value==='全选'
+        checkStaus.value === "全选";
       }
       cartsInfo.value.forEach((itemA) => {
         CartsApi.updateCartsInfo(itemA);
@@ -124,16 +138,33 @@ const updCheck = async function (item, flag) {
   }
 };
 
-const gotoPayment = function(){
-  if(totalGoods.value===0){
-    return uni.showToast({
-      title: '请选择商品',
-      icon: 'none',
-    })
+//获取订单号
+const getOrderId = async function () {
+  console.log(orderId.value);
+  if (head.value !== "") {
+    orderId.value = await OrderApi.getCreateOrderId();
   }
+  console.log(orderId.value);
+};
+//将商品添加到订单中
+const addOrderGoods = async function () {
+  await OrderApi.addOrderGoods(orderId.value, cartsInfo);
+};
+
+const gotoPayment = async function () {
+  if (totalGoods.value === 0) {
+    return uni.showToast({
+      title: "请选择商品",
+      icon: "none",
+    });
+  }
+  //获取一个空订单id
+  await getOrderId();
+  //添加商品到订单中
+  OrderApi.addOrderGoods(orderId.value, cartsInfo.value);
   //跳转到结算页面
-  uni.navigateTo({ url: '/pagesOrder/create/create' })
-}
+  uni.navigateTo({ url: "/pagesOrder/create/create?orderId=" + orderId.value });
+};
 </script>
 
 <template>
@@ -192,7 +223,7 @@ const gotoPayment = function(){
             <template #right>
               <view class="cart-swipe-right">
                 <button
-                  @tap="delCarts(item.clothId)"
+                  @tap="delCarts(item.clothId, item)"
                   class="button delete-button"
                 >
                   删除
@@ -216,13 +247,17 @@ const gotoPayment = function(){
       </view>
       <!-- 吸底工具栏 -->
       <view class="toolbar">
-        <text @tap="updCheck(null, 1)" class="all" :class="{ checked: true }"
-          >{{ checkStaus }}</text
-        >
+        <text @tap="updCheck(null, 1)" class="all" :class="{ checked: true }">{{
+          checkStaus
+        }}</text>
         <text class="text">合计:</text>
         <text class="amount">{{ totalPrice }}</text>
         <view class="button-grounp">
-          <view @tap="gotoPayment()" class="button payment-button" :class="{ disabled: true }">
+          <view
+            @tap="gotoPayment()"
+            class="button payment-button"
+            :class="{ disabled: true }"
+          >
             去结算({{ totalGoods }})
           </view>
         </view>

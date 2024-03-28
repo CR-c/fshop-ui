@@ -1,8 +1,10 @@
 // src/pages/goods/goods.vue
 <script setup>
-import { ref } from "vue";
+import { ref, onUpdated } from "vue";
 import { onLoad } from "@dcloudio/uni-app";
 import Goods from "@/api/goods.js";
+import OrderApi from "@/api/order";
+import CartsApi from "@/api/cart";
 import stoken from "@/stores/token.js";
 //自定组件
 import addressPanel from "@/pages/goods/comps/addressPanel.vue";
@@ -28,22 +30,65 @@ const specsScInfo = ref({
 
 //添加到购物车
 const addCart = async function () {
-  console.log(specsScInfo.value)
+  console.log(specsScInfo.value);
   //当选择了尺寸和数量才能添加购物车
   if (
     specsScInfo.value.color !== "" &&
     specsScInfo.value.num !== 0 &&
     specsScInfo.value.size !== ""
   ) {
-    Goods.addCarts(specsScInfo.value, clothInfo.value, clothSId.value);
+    Goods.addCarts(specsScInfo.value, clothInfo.value, clothSId.value, false);
     uni.showToast({ icon: "success", title: "添加成功" });
-
   } else {
     popupName.value = "specs";
     popup.value.open();
   }
 };
+const cartsInfo = ref([]);
 
+//立即购买
+const buyNow = async function () {
+  if (
+    specsScInfo.value.color !== "" &&
+    specsScInfo.value.num !== 0 &&
+    specsScInfo.value.size !== ""
+  ) {
+    //获取空订单id
+    getOrderId();
+    await Goods.addCarts(
+      specsScInfo.value,
+      clothInfo.value,
+      clothSId.value,
+      true
+    );
+    //获取购物车信息
+    cartsInfo.value = await CartsApi.getCartsInfo();
+    //添加到购物详情
+    await OrderApi.addOrderGoods(orderId.value, cartsInfo.value);
+    //跳转到提交页面
+    uni.navigateTo({
+      url: "/pagesOrder/create/create?orderId=" + orderId.value,
+    });
+  } else {
+    popupName.value = "specs";
+    popup.value.open();
+  }
+};
+//空订单id
+const orderId = ref(-1);
+//请求头
+const head = ref("");
+const getOrderId = async function () {
+  head.value = stoken.userTokenStore().token;
+  if (head.value !== "") {
+    orderId.value = await OrderApi.getCreateOrderId();
+  }
+  console.log(orderId.value);
+};
+
+onUpdated(() => {
+  // getOrderId();
+});
 // 接收页面参数
 onLoad((options) => {
   // console.log(options)
@@ -51,7 +96,6 @@ onLoad((options) => {
   console.log(options.id);
   getClothInfo();
   getClothSwiper();
-
   // getAddressList();
 });
 //获取地址信息
@@ -234,8 +278,8 @@ const popupNew = function (name) {
       </navigator>
     </view>
     <view class="buttons">
-      <view @tap="addCart()" class="addcart" > 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view @tap="addCart()" class="addcart"> 加入购物车 </view>
+      <view @tap="buyNow()" class="buynow"> 立即购买 </view>
     </view>
   </view>
 

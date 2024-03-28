@@ -110,7 +110,7 @@ const getNums = function (id, size, color) {
 }
 
 //增加选中商品到购物车
-const addCarts = function (specsScInfo, clothInfo,clothSId) {
+const addCarts = function (specsScInfo, clothInfo,clothSId,checkFlag) {
     const carts = {
         //数量
         quantity: specsScInfo.num,
@@ -125,7 +125,9 @@ const addCarts = function (specsScInfo, clothInfo,clothSId) {
         //衣服名称
         clothName:clothInfo.name,
         //图片img
-        img:clothInfo.image
+        img:clothInfo.image,
+        //是否选中,如果时立即购买则需要设置为true,默认为false
+        checkFlag:checkFlag
     }
 
     return request({

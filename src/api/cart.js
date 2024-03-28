@@ -25,10 +25,11 @@ const updateCartsInfo = function (item) {
     })
 }
 //删除单个购物车信息
-const deleteCartsInfo = function (clothId) {
+const deleteCartsInfo = function (clothId,carts) {
     return request({
         method: "DELETE",
-        url: "/carts/app/delCarts/" + clothId
+        url: "/carts/app/delCarts/" + clothId,
+        data:carts
     }).then((response) => {
         console.log(response)
     }).catch((e) => {

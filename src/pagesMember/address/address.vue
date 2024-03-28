@@ -3,8 +3,21 @@
 import { ref, onMounted, toRaw, computed } from "vue";
 import Goods from "@/api/goods.js";
 import AddressApi from "@/api/address";
+import AddressStore from "@/stores/address"
 
 const addressList = ref([]);
+
+
+const onChangeAddress = function(item){
+  // 修改选中收货地址
+  AddressStore.orderAddressStore().setAddressId(item.addressId)
+  console.log(AddressStore.orderAddressStore().addressId)
+  // 返回上一页
+  uni.navigateBack({
+    delta:1,
+  })
+}
+
 
 const getAddressList = async function () {
   addressList.value = await Goods.getAddress();
@@ -42,7 +55,7 @@ onMounted(() => {
             v-for="item in addressList"
             :key="item.addressId"
           >
-            <view class="item-content">
+            <view class="item-content" @tap="onChangeAddress(item)">
               <view class="user">
                 {{ item.name }}
                 <text class="contact">{{ item.phone }}</text>
