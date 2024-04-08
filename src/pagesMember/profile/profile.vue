@@ -5,6 +5,7 @@ import my from "@/api/my";
 import { computed, onMounted, ref } from "vue";
 import {onShow,onLoad} from "@dcloudio/uni-app";
 import {userInfoStore} from "@/stores/userInfo"
+import stoken from '@/stores/token.js'
 // import { get } from "http";
 // import My from "../../api/my.js"
 const userInfo = ref({
@@ -57,11 +58,42 @@ const updateUser = function(){
 }
 
 const updateUserImage = function(){
-  uni.chooseImage({
-    sizeType: ['original', 'compressed'],
-    sourceType: ['album', 'camera'],
-    success: ({ tempFilePaths, tempFiles }) => {},
-    fail: (error) => {}
+  uni.chooseMedia({
+    // 文件个数
+    count: 1,
+    // 文件类型
+    mediaType: ['image'],
+    success: (res) => {
+      // 本地路径
+      const { tempFilePath } = res.tempFiles[0]
+      console.log(res.tempFiles);
+      // 文件上传
+      uni.uploadFile({
+        url: 'http://localhost:5600/user/app/updUser_pic', // [!code ++]
+        name: 'file', // 后端数据字段名  // [!code ++]
+        filePath: tempFilePath, // 新头像  // [!code ++]
+        header:{
+          'Authorization':'Bearer ' + stoken.userTokenStore().token
+        },
+        success: (res) => {
+          console.log(res)
+          // 判断状态码是否上传成功
+          if (res.statusCode === 200) {
+            // 提取头像
+            const { avatar } = JSON.parse(res.data).result 
+            // 当前页面更新头像
+            userInfo.value.pic = avatar;
+            // profile.value.avatar = avatar // [!code ++]
+            // 更新 Store 头像
+            store_userInfo.pic = avatar;
+            // memberStore.profile.avatar = avatar // [!code ++]
+            uni.showToast({ icon: 'success', title: '更新成功' })
+          } else {
+            uni.showToast({ icon: 'error', title: '出现错误' })
+          }
+        }
+      })
+    },
   })
 }
 
@@ -78,7 +110,7 @@ const updateUserImage = function(){
     <view class="avatar">
       <view class="avatar-content">
         <image class="image" :src="userInfo.pic" mode="aspectFill"  />
-        <text class="text">点击修改头像</text>
+        <text @tap="updateUserImage()" class="text">点击修改头像</text>
       </view>
     </view>
     <!-- 表单 -->

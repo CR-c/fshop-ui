@@ -1,115 +1,128 @@
 // AddressPanel.vue
 <script setup>
 //
-import Goods from "@/api/goods.js"
-import { onLoad } from "@dcloudio/uni-app"
-import stoken from "@/stores/token.js"
-import {ref,onMounted,toRaw, computed} from 'vue'
-const emit = defineEmits(['close','setAddressInfo'])
-const emitF = function(){
-  emit('close');
-}
-const emitA = function(item){
-  emit('setAddressInfo',item)
-}
-//页码
-const page = ref(1)
+import Goods from "@/api/goods.js";
+import { onLoad } from "@dcloudio/uni-app";
+import stoken from "@/stores/token.js";
+import { ref, onMounted, toRaw, computed } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+
+const emit = defineEmits(["close", "setAddressInfo"]);
+const emitF = function () {
+  emit("close");
+};
+const emitA = function (item) {
+  emit("setAddressInfo", item);
+};
+
 //总页码
-const pages = ref(1)
+const pages = ref(1);
 //分页查询的所有信息
-const addressPage = ref([])
+const addressPage = ref([]);
 //分页查询的具体信息
-const addressList = ref([])
+const addressList = ref([]);
+//页码
+const page = ref(0);
 //进行分页查询
-const getAddressList =  async function(page,pageSize){
-  addressPage.value = await Goods.getAddressPage(page,pageSize)
-  // addressList.value = addressPage.value.records
-  // addressList.value = toRaw(addressPage.value.target)
-  pages.value = addressPage.value.pages
-  // console.log(addressPage.value)
-  // console.log(toRaw(addressPage.data.data))
-  // console.log(toRaw(addressPage.data.records))
-  // console.log(toRaw(addressPage.value.records))
-  // console.log(toRaw(addressPage.value.pages))
-}
-
-onMounted(()=>{
-  console.log("onMounted-begin")
-  //默认查询3条每页
-  getAddressList(1,3);
-
-})
-
-
-
-
-const cutPage = function(){
-  console.log("cutPage-begin")
-  console.log(page.value)
-  if(page.value!==1){
-    page.value = page.value-1;
+const getAddressList = async function (pageNum, pageSize) {
+  addressPage.value = await Goods.getAddressPage(pageNum, pageSize);
+  console.log(addressPage.value);
+  console.log(addressPage.value.total);
+  console.log(typeof page);
+  if (addressPage.value.total > 0) {
+    page.value = 1;
+  } else {
+    page.value = 0;
   }
-  console.log("cutPage-end")
-  console.log(page.value)
-  getAddressList(page.value,3);
-}
-const addPage = function(){
-  console.log("addPage-begin")
-  console.log(page.value)
-  if(page.value!==pages.value){
+
+  pages.value = addressPage.value.pages;
+};
+
+onMounted(() => {
+  console.log("onMounted-begin");
+  //默认查询3条每页
+  getAddressList(1, 3);
+});
+
+onShow(() => {
+  getAddressList(1, 3);
+});
+
+const cutPage = function () {
+  console.log("cutPage-begin");
+  console.log(page.value);
+  if (page.value !== 1) {
+    page.value = page.value - 1;
+  }
+  console.log("cutPage-end");
+  console.log(page.value);
+  getAddressList(page.value, 3);
+};
+const addPage = function () {
+  console.log("addPage-begin");
+  console.log(page.value);
+  if (page.value !== pages.value) {
     page.value++;
   }
-  console.log("addPage-end")
-  console.log(page.value)
-  getAddressList(page.value,3);
-}
-
-
-
+  console.log("addPage-end");
+  console.log(page.value);
+  getAddressList(page.value, 3);
+};
 </script>
 
 <template>
   <view class="address-panel">
     <!-- 关闭按钮 -->
     <!-- <text  class="close icon-close"></text> -->
-    <uni-icons type="closeempty" color="" size="24" @click="emitF()"/>
+    <uni-icons type="closeempty" color="" size="24" @click="emitF()" />
     <!-- 标题 -->
     <view class="title">配送至</view>
     <!-- 内容 -->
-    <!-- <view class="content">
-      <view class="item"  v-for="item in addressList" :key="item.addressId" >
-        <view class="user">{{ item.name }}</view>
-        <view class="address">{{item.address}}</view>
-        <uni-icons class="iconsc" type="circle" size="24" @click="emitA(item)"/>  
-        <view>{{ item.phone }}</view>
-      </view>
-    </view> -->
     <!-- 地址懒 -->
     <view class="address">
       <!-- <view class="item" v-for="item in addressList" :key="item.addressId"> -->
-      <view class="item" v-for="item in addressPage.records" :key="item.addressId">
+      <view
+        class="item"
+        v-for="item in addressPage.records"
+        :key="item.addressId"
+      >
         <view class="item-content">
           <view class="user">
             {{ item.name }}
-            <text class="contact">{{item.phone}}</text>
-            <text v-if="item.flag===0" class="badge">默认 </text>
-            <uni-icons class="iconsc" type="circle" size="24" @click="emitA(item)"/>  
+            <text class="contact">{{ item.phone }}</text>
+            <text v-if="item.flag === 0" class="badge">默认 </text>
+            <uni-icons
+              class="iconsc"
+              type="circle"
+              size="24"
+              @click="emitA(item)"
+            />
           </view>
-          <view class="locate">{{ item.province }} {{ item.city }} {{ item.area }} {{ item.stress }}</view>
+          <view class="locate"
+            >{{ item.province }} {{ item.city }} {{ item.area }}
+            {{ item.stress }}</view
+          >
         </view>
       </view>
-    <view>
-      <!-- 翻页 -->
-    </view>
+      <view>
+        <!-- 翻页 -->
+      </view>
       <uni-icons type="arrow-left" size="30" @click="cutPage()"></uni-icons>
-      <text class="current">{{page}}</text>
+      <text class="current">{{ page }}</text>
       <text class="split">/</text>
       <text class="total">{{ addressPage.pages }}</text>
-      <uni-icons type="arrow-right" size="30" @click="addPage()" ></uni-icons>
+      <uni-icons type="arrow-right" size="30" @click="addPage()"></uni-icons>
     </view>
     <!-- 新建地址 -->
     <view class="footer">
-      <view class="button primary"> 新建地址 </view>
+      <!-- <view class="button primary"> 新建地址 </view> -->
+      <navigator
+        class="button primary"
+        hover-class="none"
+        url="/pagesMember/address-form/address-form"
+      >
+        新建地址
+      </navigator>
       <view v-if="false" class="button primary">确定</view>
     </view>
   </view>
@@ -179,7 +192,7 @@ const addPage = function(){
     position: absolute;
     right: 8%;
   }
-  .iconsc{
+  .iconsc {
     position: absolute;
     right: 0;
   }
@@ -210,14 +223,13 @@ const addPage = function(){
   .secondary {
     background-color: #ffa868;
   }
-  
 }
 .address {
   padding: 0 20rpx;
   margin: 0 20rpx;
   border-radius: 10rpx;
   background-color: #fff;
-  .iconsc{
+  .iconsc {
     position: absolute;
     right: 0;
   }

@@ -90,7 +90,7 @@ const tempfunction = function(){
         <view class="action">
           <!-- 待付款状态：显示去支付按钮 -->
           <template v-if="order.orderStatus === 1">
-            <view class="button primary">去支付</view>
+            <view  class="button primary">去支付</view>
           </template>
           <template v-else>
             <navigator

@@ -6,9 +6,9 @@ import { UniAdapter } from "uniapp-axios-adapter";
 // const instance = axios.create({baseURL});
 const instance = axios.create({
     // baseURL : 'https://10.225.196.74:8080',
-    // baseURL : 'http://localhost:8081',
+    baseURL : 'http://localhost:5600',
     //阿里云ecs
-    baseURL: 'https://47.115.213.55:9001',
+    // baseURL: 'http://47.115.213.55:9001',
     // timeout: 10000,
     adapter: UniAdapter,
   });

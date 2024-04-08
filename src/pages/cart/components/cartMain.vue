@@ -19,10 +19,14 @@ const cartsInfo = ref([]);
 const checkStaus = ref("");
 //空订单号
 const orderId = ref(-1);
+const cartsLength = ref(0);
 //获取购物车的信息
 const getCartsInfo = async function () {
   cartsInfo.value = await CartsApi.getCartsInfo();
   console.log(cartsInfo.value);
+  if (cartsInfo.value !== null) {
+    cartsLength.value = cartsInfo.value.length;
+  }
   judge_checkALl();
 };
 //判断是否全部选中了
@@ -84,15 +88,17 @@ onUpdated(() => {
 const updateTotalPrice = function () {
   let sum = 0;
   let count = 0;
-  cartsInfo.value.forEach((item) => {
-    if (item.checkFlag === true) {
-      sum += item.price * item.quantity;
-      count += 1;
-      console.log(sum);
-    }
-  });
-  totalPrice.value = sum;
-  totalGoods.value = count;
+  if (cartsInfo.value !== null) {
+    cartsInfo.value.forEach((item) => {
+      if (item.checkFlag === true) {
+        sum += item.price * item.quantity;
+        count += 1;
+        console.log(sum);
+      }
+    });
+    totalPrice.value = sum;
+    totalGoods.value = count;
+  }
 };
 
 //更新购物车选中商品的数量
